@@ -9,7 +9,7 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              https://hjertus.online
+ * @link              https://24gaming.no
  * @since             1.0.0
  * @package           Out_Of_Stock_Products_Last
  *
@@ -40,34 +40,6 @@ function filter_product_query_meta_query ( $meta_query, $query) {
     return $meta_query;
 }
 
-class iWC_Orderby_Stock_Status {
-
-    public function __construct() {
-        // Check if WooCommerce is active
-        if (is_plugin_active('woocommerce/woocommerce.php')) {
-            add_action('pre_get_posts', array($this, 'custom_orderby_stock_status'));
-        }
-    }
-
-    public function custom_orderby_stock_status($query) {
-        if ($query->is_main_query() && (is_shop() || is_product_category() || is_product_tag())) {
-            $query->set('meta_key', '_stock_status');
-            $query->set('orderby', array('meta_value' => 'ASC', 'title' => 'ASC'));
-            $query->set('order', 'ASC');
-            $query->set('meta_query', array(
-                array(
-                    'key' => '_stock_status',
-                    'value' => '',
-                    'compare' => '!=',
-                ),
-            ));
-        }
-    }
-}
-
-new iWC_Orderby_Stock_Status();
-
-
 // remove OOS products from related products in WooCommerce, because they are OOS! by Robin Scott of silicondales.com - see more at https://silicondales.com/tutorials/woocommerce/remove-out-of-stock-products-from-woocommerce-related-products/
 add_filter('woocommerce_related_products', 'exclude_oos_related_products', 10, 3);
 
@@ -84,4 +56,13 @@ function exclude_oos_related_products($related_posts, $product_id, $args)
 
     return array_diff($related_posts, $exclude_ids);
 }
+
+add_filter( 'woocommerce_get_catalog_ordering_args', 'bbloomer_first_sort_by_stock_amount', 9999 );
+
+function bbloomer_first_sort_by_stock_amount( $args ) {
+    $args['orderby'] = 'meta_value';
+    $args['meta_key'] = '_stock_status';
+    return $args;
+}
+
 ?>
